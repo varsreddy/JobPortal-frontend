@@ -3,7 +3,7 @@ import { Label } from '../components/ui/label';
 import { RadioGroup, RadioGroupItem } from '../components/ui/radio-group';
 import React, { useEffect, useState } from 'react';
 import { Button } from '../components/ui/button';
-import { setSearchedQuery, setSalaryFilter } from '@/redux/jobSlice'; // ✅ include salaryFilter
+import { setSearchedQuery, setSalaryFilter } from '@/redux/jobSlice';
 
 const salaryRanges = {
   "0 - 5": { min: 0, max: 5 },
@@ -14,18 +14,9 @@ const salaryRanges = {
 };
 
 const filterData = [
-  {
-    filterType: "Location",
-    array: ["Delhi NCR", "Bangalore", "Hyderabad", "Kerala", "Gujarat", "Vizag"]
-  },
-  {
-    filterType: "Industry",
-    array: ["Frontend Developer", "Backend Developer", "Full Stack Developer", "AI Engineer"]
-  },
-  {
-    filterType: "Salary (LPA)", // ✅ Include unit in heading
-    array: Object.keys(salaryRanges)
-  }
+  { filterType: "Location", array: ["Delhi NCR", "Bangalore", "Hyderabad", "Kerala", "Gujarat", "Vizag"] },
+  { filterType: "Industry", array: ["Frontend Developer", "Backend Developer", "Full Stack Developer", "AI Engineer"] },
+  { filterType: "Salary (LPA)", array: Object.keys(salaryRanges) }
 ];
 
 const FilterCard = () => {
@@ -36,13 +27,20 @@ const FilterCard = () => {
     setSelectedValue(value);
 
     if (salaryRanges[value]) {
-      const range = `${salaryRanges[value].min}-${salaryRanges[value].max}`;
-      dispatch(setSalaryFilter(range));
-      dispatch(setSearchedQuery("")); // Clear keyword when salary filter is selected
+      const min = salaryRanges[value]?.min;
+      const max = salaryRanges[value]?.max === Infinity ? "Infinity" : salaryRanges[value]?.max;
+
+      if (!isNaN(min) && !isNaN(max)) {
+        dispatch(setSalaryFilter(`${min}-${max}`));
+      } else {
+        dispatch(setSalaryFilter(""));
+      }
     } else {
       dispatch(setSearchedQuery(value));
-      dispatch(setSalaryFilter("")); // Clear salary filter if location/industry selected
     }
+
+    console.log("✅ Selected Salary Filter:", salaryRanges[value]?.min, "-", salaryRanges[value]?.max);
+    console.log("✅ Searched Query:", value);
   };
 
   useEffect(() => {
