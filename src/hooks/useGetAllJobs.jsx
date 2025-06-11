@@ -11,11 +11,6 @@ const useGetJobs = () => {
   useEffect(() => {
     const fetchJobs = async () => {
       try {
-        if (!(searchedQuery && searchedQuery.trim()) && !(salaryFilter && salaryFilter.trim())) {
-          console.log("🚫 No filters applied - skipping API call.");
-          return;
-        }
-
         let url = `${JOB_API_END_POINT}/get`;
         const queryParams = [];
 
@@ -47,6 +42,8 @@ const useGetJobs = () => {
             Authorization: `Bearer ${token}`
           }
         });
+
+        console.log("📦 API Response:", res.data); // Debugging
 
         if (res.data.success) {
           dispatch(setAllJobs(res.data.jobs));
