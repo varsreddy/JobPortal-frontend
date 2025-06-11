@@ -35,7 +35,6 @@ const FilterCard = () => {
   const changeHandler = (value) => {
     setSelectedValue(value);
 
-    // Convert selected salary range into numeric LPA values for filtering
     const selectedFilter = salaryRanges[value] 
       ? `${salaryRanges[value].min}-${salaryRanges[value].max}` 
       : value;
