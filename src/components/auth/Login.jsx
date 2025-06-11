@@ -33,33 +33,36 @@ const Login = () => {
     if(user){
       navigate("/");
     }
-  },[]);
+  },[user]);
 
   const submitHandler = async (e) => {
-    e.preventDefault();
-    // console.log(input);
+  e.preventDefault();
 
-    try {
-      dispatch(setLoading(true));
-      const res = await axios.post(`${USER_API_END_POINT}/login`, input, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-        withCredentials: true,
-      });
+  try {
+    dispatch(setLoading(true));
+    const res = await axios.post(`${USER_API_END_POINT}/login`, input, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      withCredentials: true, // ✅ Ensure cookies are sent
+    });
 
-      if (res.data.success) {
-        dispatch(setUser(res.data.user));
-        navigate("/");
-        toast.success(res.data.message);
-      }
-    } catch (error) {
-      console.log("Error during login:", error);
-      toast.error(error?.response?.data?.message || "Something went wrong");
-    } finally {
-      dispatch(setLoading(false));
+    if (res.data.success) {
+      localStorage.setItem('token', res.data.token); // ✅ Store token securely
+      dispatch(setUser(res.data.user));
+      navigate("/");
+      toast.success(res.data.message);
+    } else {
+      toast.error(res.data.message);
     }
-  };
+  } catch (error) {
+    console.log("Error during login:", error);
+    toast.error(error?.response?.data?.message || "Something went wrong");
+  } finally {
+    dispatch(setLoading(false));
+  }
+};
+
   return (
     <div>
       <Navbar />
