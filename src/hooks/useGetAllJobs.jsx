@@ -31,7 +31,6 @@
 
 
 
-
 import { setAllJobs } from '@/redux/jobSlice';
 import { JOB_API_END_POINT } from '@/utils/constant';
 import axios from 'axios';
@@ -44,30 +43,43 @@ const useGetJobs = () => {
 
   useEffect(() => {
     const fetchJobs = async () => {
-      try {
-        let url = `${JOB_API_END_POINT}/get`;
+  try {
+    let url = `${JOB_API_END_POINT}/get`;
 
-        // If searchedQuery exists and is not empty, add keyword param
-        if (searchedQuery && searchedQuery.trim() !== '') {
-          url += `?keyword=${encodeURIComponent(searchedQuery.trim())}`;
-        }
+    if (searchedQuery && searchedQuery.trim() !== '') {
+      url += `?keyword=${encodeURIComponent(searchedQuery.trim())}`;
+    }
 
-        const res = await axios.get(url, { withCredentials: true });
+    const token = localStorage.getItem('token');
 
-        if (res.data.success) {
-          dispatch(setAllJobs(res.data.jobs));
-        } else {
-          dispatch(setAllJobs([])); // Clear if no jobs found
-        }
-      } catch (err) {
-        console.log("Error fetching jobs:", err);
-        dispatch(setAllJobs([])); // Clear jobs on error
+    if (!token) {
+      console.warn("No authentication token found. Redirecting to login...");
+      return; // Prevent unauthorized API calls
+    }
+
+    console.log("Using token:", token); // ✅ Debugging token presence
+
+    const res = await axios.get(url, {
+      withCredentials: true,
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}` // ✅ Ensure proper token format
       }
-    };
+    });
+
+    if (res.data.success) {
+      dispatch(setAllJobs(res.data.jobs));
+    } else {
+      dispatch(setAllJobs([]));
+    }
+  } catch (err) {
+    console.error("Error fetching jobs:", err);
+    dispatch(setAllJobs([]));
+  }
+};
 
     fetchJobs();
   }, [searchedQuery]);
-
 };
 
 export default useGetJobs;
