@@ -6,43 +6,36 @@ import { useDispatch, useSelector } from 'react-redux';
 
 const useGetJobs = () => {
   const dispatch = useDispatch();
-  const { searchedQuery, salaryFilter } = useSelector(store => store.job); // ✅ Get salaryFilter here
+  const { searchedQuery, salaryFilter } = useSelector(store => store.job);
 
   useEffect(() => {
     const fetchJobs = async () => {
       try {
-        // ✅ Prevent unnecessary API calls if both filters are empty
-        if (!searchedQuery.trim() && !salaryFilter) {
-          console.log("Skipping job fetch - No filters applied.");
-          return;
-        }
+        if (!searchedQuery && !salaryFilter) return;
 
         let url = `${JOB_API_END_POINT}/get`;
+        const queryParams = [];
 
-        if (searchedQuery && searchedQuery.trim() !== '') {
-          url += `?keyword=${encodeURIComponent(searchedQuery.trim())}`;
+        if (searchedQuery?.trim()) {
+          queryParams.push(`keyword=${encodeURIComponent(searchedQuery.trim())}`);
         }
 
-        // ✅ Ensure salaryFilter is properly formatted before adding it
-        if (salaryFilter && salaryFilter.match(/^\d+\s*-\s*\d+$/)) {
-          url += `${searchedQuery ? '&' : '?'}salary=${salaryFilter}`;
+        if (salaryFilter && /^\d+-\d+$/.test(salaryFilter)) {
+          queryParams.push(`salary=${salaryFilter}`);
+        }
+
+        if (queryParams.length > 0) {
+          url += `?${queryParams.join("&")}`;
         }
 
         const token = localStorage.getItem('token');
-
-        if (!token) {
-          console.warn("No authentication token found. Redirecting to login...");
-          return;
-        }
-
-        console.log("Using token:", token); // ✅ Debugging token presence
-        console.log("Sending request to:", url); // ✅ Debugging URL format
+        if (!token) return;
 
         const res = await axios.get(url, {
           withCredentials: true,
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}` // ✅ Ensure proper token format
+            Authorization: `Bearer ${token}`
           }
         });
 
@@ -58,7 +51,7 @@ const useGetJobs = () => {
     };
 
     fetchJobs();
-  }, [searchedQuery, salaryFilter]); // ✅ Added salaryFilter dependency
+  }, [searchedQuery, salaryFilter]);
 };
 
 export default useGetJobs;
