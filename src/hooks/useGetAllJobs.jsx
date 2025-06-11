@@ -11,7 +11,7 @@ const useGetJobs = () => {
   useEffect(() => {
     const fetchJobs = async () => {
       try {
-        if (!searchedQuery.trim() && !salaryFilter.trim()) {
+        if (!(searchedQuery?.trim()) && !(salaryFilter?.trim())) {
           console.log("🚫 No filters applied - skipping API call.");
           return;
         }
@@ -19,21 +19,25 @@ const useGetJobs = () => {
         let url = `${JOB_API_END_POINT}/get`;
         const queryParams = [];
 
-        if (searchedQuery.trim()) {
+        if (searchedQuery?.trim()) {
           queryParams.push(`keyword=${encodeURIComponent(searchedQuery.trim())}`);
         }
 
         if (salaryFilter && /^\d+-\d+$/.test(salaryFilter)) {
-          queryParams.push(`salary=${salaryFilter}`);
+          const [min, max] = salaryFilter.split("-").map(Number);
+          if (!isNaN(min) && !isNaN(max) && min >= 0) { 
+            queryParams.push(`salary=${salaryFilter}`);
+          }
         }
 
         if (queryParams.length > 0) {
           url += `?${queryParams.join("&")}`;
         }
 
-        console.log("🔗 Request URL:", url);
-
         const token = localStorage.getItem('token');
+        console.log("🛠 Token Found:", !!token);
+        console.log("🔗 Final Request URL:", url);
+
         if (!token) return;
 
         const res = await axios.get(url, {
