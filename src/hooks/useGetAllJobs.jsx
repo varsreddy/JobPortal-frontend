@@ -11,22 +11,22 @@ const useGetJobs = () => {
   useEffect(() => {
     const fetchJobs = async () => {
       try {
-        if (!searchedQuery && !salaryFilter) return;
-
         let url = `${JOB_API_END_POINT}/get`;
         const queryParams = [];
 
-        if (searchedQuery?.trim()) {
+        if (searchedQuery.trim()) {
           queryParams.push(`keyword=${encodeURIComponent(searchedQuery.trim())}`);
         }
 
-        if (salaryFilter && /^\d+-\d+$/.test(salaryFilter)) {
+        if (salaryFilter && salaryFilter.includes("-")) {
           queryParams.push(`salary=${salaryFilter}`);
         }
 
         if (queryParams.length > 0) {
           url += `?${queryParams.join("&")}`;
         }
+
+        console.log("🔗 Request URL:", url);
 
         const token = localStorage.getItem('token');
         if (!token) return;
@@ -45,7 +45,7 @@ const useGetJobs = () => {
           dispatch(setAllJobs([]));
         }
       } catch (err) {
-        console.error("Error fetching jobs:", err);
+        console.error("❌ Error fetching jobs:", err);
         dispatch(setAllJobs([]));
       }
     };
