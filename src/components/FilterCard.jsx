@@ -5,12 +5,13 @@ import React, { useEffect, useState } from 'react';
 import { Button } from '../components/ui/button';
 import { setSearchedQuery } from '@/redux/jobSlice';
 
-const salaryRanges = {
-  "Below 5 LPA": { min: 0, max: 5 },
-  "5 - 10 LPA": { min: 5, max: 10 },
-  "10 - 20 LPA": { min: 10, max: 20 },
-  "Above 20 LPA": { min: 20, max: Infinity }
-};
+const salaryRanges = [
+  "0 - 5",
+  "5 - 10",
+  "10 - 15",
+  "15 - 20",
+  "20+"
+];
 
 const filterData = [
   {
@@ -22,8 +23,8 @@ const filterData = [
     array: ["Frontend Developer", "Backend Developer", "Full Stack Developer", "AI Engineer"]
   },
   {
-    filterType: "Salary",
-    array: Object.keys(salaryRanges) // ✅ Automatically generate salary filters
+    filterType: "Salary (LPA)", // ✅ Explicitly mentioning LPA
+    array: salaryRanges // ✅ Updated with numeric salary ranges
   }
 ];
 
@@ -34,12 +35,7 @@ const FilterCard = () => {
   // Handle filter selection
   const changeHandler = (value) => {
     setSelectedValue(value);
-
-    const selectedFilter = salaryRanges[value] 
-      ? `${salaryRanges[value].min}-${salaryRanges[value].max}` 
-      : value;
-
-    dispatch(setSearchedQuery(selectedFilter)); // ✅ Pass numeric range for salary
+    dispatch(setSearchedQuery(value)); // ✅ Pass numeric range for salary
   };
 
   // Dispatch filter query when value changes
