@@ -8,15 +8,20 @@ import { setSearchedQuery } from '@/redux/jobSlice';
 const filterData = [
   {
     filterType: "Location",
-    array: ["Delhi NCR", "Bangalore", "Hyderabad", "Kerala", "Gujarat"]
+    array: ["Delhi NCR", "Bangalore", "Hyderabad", "Kerala", "Gujarat", "Vizag"]
   },
   {
     filterType: "Industry",
-    array: ["Frontend Developer", "Backend Developer", "Full Stack Developer"]
+    array: ["Frontend Developer", "Backend Developer", "Full Stack Developer", "AI Engineer"]
   },
   {
     filterType: "Salary",
-    array: ["0 to 40k", "42k to 1 lakh", "1 lakh to 5 lakh"]
+    array: [
+      "Below 5 LPA", 
+      "5 - 10 LPA", 
+      "10 - 20 LPA", 
+      "Above 20 LPA"
+    ] // ✅ Updated with proper LPA ranges
   }
 ];
 
@@ -44,6 +49,12 @@ const FilterCard = () => {
     };
   }, []);
 
+  // Clear filters manually
+  const clearFilters = () => {
+    setSelectedValue("");
+    dispatch(setSearchedQuery(""));
+  };
+
   return (
     <div className='w-full bg-white p-3 rounded-md'>
       <h1 className='font-bold text-lg'>Filter Jobs</h1>
@@ -67,7 +78,7 @@ const FilterCard = () => {
       </RadioGroup>
 
       {/* ✅ Clear Filters Button */}
-      <Button className="mt-4 bg-red-500 text-white hover:bg-red-600" onClick={() => setSelectedValue("")}>
+      <Button className="mt-4 bg-red-500 text-white hover:bg-red-600" onClick={clearFilters}>
         Clear Filters
       </Button>
     </div>
