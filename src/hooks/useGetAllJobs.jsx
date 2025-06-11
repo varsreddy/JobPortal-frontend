@@ -11,14 +11,21 @@ const useGetJobs = () => {
   useEffect(() => {
     const fetchJobs = async () => {
       try {
+        // ✅ Prevent unnecessary API calls if both filters are empty
+        if (!searchedQuery.trim() && !salaryFilter) {
+          console.log("Skipping job fetch - No filters applied.");
+          return;
+        }
+
         let url = `${JOB_API_END_POINT}/get`;
 
         if (searchedQuery && searchedQuery.trim() !== '') {
           url += `?keyword=${encodeURIComponent(searchedQuery.trim())}`;
         }
 
-        if (salaryFilter && salaryFilter.includes('-')) {
-          url += `${searchedQuery ? '&' : '?'}salary=${salaryFilter}`; // ✅ Append salary filtering
+        // ✅ Ensure salaryFilter is properly formatted before adding it
+        if (salaryFilter && salaryFilter.match(/^\d+\s*-\s*\d+$/)) {
+          url += `${searchedQuery ? '&' : '?'}salary=${salaryFilter}`;
         }
 
         const token = localStorage.getItem('token');
