@@ -11,7 +11,7 @@ const useGetJobs = () => {
   useEffect(() => {
     const fetchJobs = async () => {
       try {
-        if (!(searchedQuery?.trim()) && !(salaryFilter?.trim())) {
+        if (!(searchedQuery && searchedQuery.trim()) && !(salaryFilter && salaryFilter.trim())) {
           console.log("🚫 No filters applied - skipping API call.");
           return;
         }
@@ -25,7 +25,7 @@ const useGetJobs = () => {
 
         if (salaryFilter && /^\d+-\d+$/.test(salaryFilter)) {
           const [min, max] = salaryFilter.split("-").map(Number);
-          if (!isNaN(min) && !isNaN(max) && min >= 0) { 
+          if (!isNaN(min) && !isNaN(max) && min >= 0) {
             queryParams.push(`salary=${salaryFilter}`);
           }
         }
@@ -36,7 +36,7 @@ const useGetJobs = () => {
 
         const token = localStorage.getItem('token');
         console.log("🛠 Token Found:", !!token);
-        console.log("🔗 Final Request URL:", url);
+        console.log("🔗 Requesting Jobs with:", { searchedQuery, salaryFilter, url });
 
         if (!token) return;
 
