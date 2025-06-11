@@ -11,6 +11,11 @@ const useGetJobs = () => {
   useEffect(() => {
     const fetchJobs = async () => {
       try {
+        if (!searchedQuery.trim() && !salaryFilter.trim()) {
+          console.log("🚫 No filters applied - skipping API call.");
+          return;
+        }
+
         let url = `${JOB_API_END_POINT}/get`;
         const queryParams = [];
 
@@ -18,7 +23,7 @@ const useGetJobs = () => {
           queryParams.push(`keyword=${encodeURIComponent(searchedQuery.trim())}`);
         }
 
-        if (salaryFilter && salaryFilter.includes("-")) {
+        if (salaryFilter && /^\d+-\d+$/.test(salaryFilter)) {
           queryParams.push(`salary=${salaryFilter}`);
         }
 
