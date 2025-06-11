@@ -42,7 +42,7 @@ const useGetJobs = () => {
   const { searchedQuery } = useSelector(store => store.job);
 
   useEffect(() => {
-    const fetchJobs = async () => {
+const fetchJobs = async () => {
   try {
     let url = `${JOB_API_END_POINT}/get`;
 
@@ -50,14 +50,22 @@ const useGetJobs = () => {
       url += `?keyword=${encodeURIComponent(searchedQuery.trim())}`;
     }
 
+    // Get salary range from Redux (assuming it's stored in `store.job.salaryFilter`)
+    const { salaryFilter } = useSelector(store => store.job);
+
+    if (salaryFilter) {
+      url += `${searchedQuery ? '&' : '?'}salary=${salaryFilter}`;
+    }
+
     const token = localStorage.getItem('token');
 
     if (!token) {
       console.warn("No authentication token found. Redirecting to login...");
-      return; // Prevent unauthorized API calls
+      return;
     }
 
     console.log("Using token:", token); // ✅ Debugging token presence
+    console.log("Sending request to:", url); // ✅ Debugging URL format
 
     const res = await axios.get(url, {
       withCredentials: true,
