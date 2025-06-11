@@ -3,15 +3,15 @@ import { Label } from '../components/ui/label';
 import { RadioGroup, RadioGroupItem } from '../components/ui/radio-group';
 import React, { useEffect, useState } from 'react';
 import { Button } from '../components/ui/button';
-import { setSearchedQuery } from '@/redux/jobSlice';
+import { setSearchedQuery, setSalaryFilter } from '@/redux/jobSlice'; // ✅ include salaryFilter
 
-const salaryRanges = [
-  "0 - 5",
-  "5 - 10",
-  "10 - 15",
-  "15 - 20",
-  "20+"
-];
+const salaryRanges = {
+  "0 - 5": { min: 0, max: 5 },
+  "5 - 10": { min: 5, max: 10 },
+  "10 - 15": { min: 10, max: 15 },
+  "15 - 20": { min: 15, max: 20 },
+  "20+": { min: 20, max: Infinity }
+};
 
 const filterData = [
   {
@@ -23,8 +23,8 @@ const filterData = [
     array: ["Frontend Developer", "Backend Developer", "Full Stack Developer", "AI Engineer"]
   },
   {
-    filterType: "Salary (LPA)", // ✅ Explicitly mentioning LPA
-    array: salaryRanges // ✅ Updated with numeric salary ranges
+    filterType: "Salary (LPA)", // ✅ Include unit in heading
+    array: Object.keys(salaryRanges)
   }
 ];
 
@@ -32,38 +32,37 @@ const FilterCard = () => {
   const [selectedValue, setSelectedValue] = useState("");
   const dispatch = useDispatch();
 
-  // Handle filter selection
   const changeHandler = (value) => {
     setSelectedValue(value);
-    dispatch(setSearchedQuery(value)); // ✅ Pass numeric range for salary
+
+    if (salaryRanges[value]) {
+      const range = `${salaryRanges[value].min}-${salaryRanges[value].max}`;
+      dispatch(setSalaryFilter(range));
+      dispatch(setSearchedQuery("")); // Clear keyword when salary filter is selected
+    } else {
+      dispatch(setSearchedQuery(value));
+      dispatch(setSalaryFilter("")); // Clear salary filter if location/industry selected
+    }
   };
 
-  // Dispatch filter query when value changes
-  useEffect(() => {
-    console.log("Selected Filter:", selectedValue);
-    dispatch(setSearchedQuery(selectedValue));
-  }, [selectedValue]);
-
-  // Clear filters when the user leaves the page
   useEffect(() => {
     return () => {
-      console.log("Clearing filters on page exit");
       dispatch(setSearchedQuery(""));
-      setSelectedValue(""); // Reset local state
+      dispatch(setSalaryFilter(""));
+      setSelectedValue("");
     };
   }, []);
 
-  // Clear filters manually
   const clearFilters = () => {
     setSelectedValue("");
     dispatch(setSearchedQuery(""));
+    dispatch(setSalaryFilter(""));
   };
 
   return (
     <div className='w-full bg-white p-3 rounded-md'>
       <h1 className='font-bold text-lg'>Filter Jobs</h1>
       <hr className='my-3' />
-
       <RadioGroup onValueChange={changeHandler} value={selectedValue}>
         {filterData.map((data) => (
           <div key={data.filterType}>
@@ -80,8 +79,6 @@ const FilterCard = () => {
           </div>
         ))}
       </RadioGroup>
-
-      {/* ✅ Clear Filters Button */}
       <Button className="mt-4 bg-red-500 text-white hover:bg-red-600" onClick={clearFilters}>
         Clear Filters
       </Button>
