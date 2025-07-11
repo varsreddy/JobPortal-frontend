@@ -29,21 +29,11 @@ const useGetJobs = () => {
           url += `?${queryParams.join("&")}`;
         }
 
-        const token = localStorage.getItem('token');
-        console.log("🛠 Token Found:", !!token);
         console.log("🔗 Requesting Jobs with:", { searchedQuery, salaryFilter, url });
 
-        if (!token) return;
+        const res = await axios.get(url); // ✅ FIXED: removed withCredentials
 
-        const res = await axios.get(url, {
-          withCredentials: true,
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`
-          }
-        });
-
-        console.log("📦 API Response:", res.data); // Debugging
+        console.log("📦 API Response:", res.data);
 
         if (res.data.success) {
           dispatch(setAllJobs(res.data.jobs));
@@ -57,7 +47,7 @@ const useGetJobs = () => {
     };
 
     fetchJobs();
-  }, [searchedQuery, salaryFilter]);
+  }, [searchedQuery, salaryFilter, dispatch]);
 };
 
 export default useGetJobs;
