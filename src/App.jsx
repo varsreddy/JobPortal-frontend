@@ -13,12 +13,14 @@ import Jobs from './components/Jobs'
 import PostJob from './components/admin/PostJob'
 import Applicants from './components/admin/Applicants'
 import ProtectedRoute from './components/admin/ProtectedRoute'
+import ErrorPage from './components/ErrorPage';
 
 
 const appRouter = createBrowserRouter([
   {
     path:'/',
-    element:<Home/>
+    element:<Home/>,
+    errorElement: <ErrorPage />, 
   },
   {
     path:'/login',
@@ -61,6 +63,10 @@ const appRouter = createBrowserRouter([
     {
     path: '/admin/jobs',
     element:<ProtectedRoute> <AdminJobs/></ProtectedRoute>
+  },
+  {
+    path: '/admin/jobs/:id/edit',
+    element: <ProtectedRoute><PostJob /></ProtectedRoute>
   },
   {
     path: '/admin/jobs/create',
