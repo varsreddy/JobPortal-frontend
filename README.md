@@ -56,7 +56,7 @@ A modern full-stack Job Portal web application where users can register, view, a
 
 
 # 1. Clone the repo
-git clone https://github.com/your-username/job-portal.git
+git clone https://github.com/varsreddy/job-portal.git
 cd job-portal
 
 # 2. Install dependencies
