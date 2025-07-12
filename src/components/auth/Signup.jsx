@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import Navbar from "../shared/Navbar";
 import { Input } from "../ui/input";
 import { Label } from "@/components/ui/label";
-import { RadioGroup } from "@/components/ui/radio-group";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { USER_API_END_POINT } from "@/utils/constant";
@@ -11,6 +10,7 @@ import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
 import { setLoading } from "@/redux/authSlice";
 import { Loader2 } from "lucide-react";
+
 const Signup = () => {
   const [input, setInput] = useState({
     fullname: "",
@@ -22,22 +22,20 @@ const Signup = () => {
   });
 
   const navigate = useNavigate();
-  const { loading,user } = useSelector((store) => store.auth);
   const dispatch = useDispatch();
+  const { loading, user } = useSelector((store) => store.auth);
 
   const changeEventHandler = (e) => {
     setInput({ ...input, [e.target.name]: e.target.value });
   };
 
-      useEffect(()=>{
-      if(user){
-        navigate("/");
-      }
-    },[]);
+  useEffect(() => {
+    if (user) {
+      navigate("/");
+    }
+  }, [user]);
 
   const changeFileHandler = (e) => {
-    // setInput({...input,file:e.target.files?.[0]});
-
     const file = e.target.files?.[0];
     if (!file.type.startsWith("image/")) {
       toast.error("Only image files are allowed.");
@@ -52,7 +50,6 @@ const Signup = () => {
 
   const submitHandler = async (e) => {
     e.preventDefault();
-    // console.log(input);
     const formData = new FormData();
     formData.append("fullname", input.fullname);
     formData.append("email", input.email);
@@ -62,12 +59,11 @@ const Signup = () => {
     if (input.file) {
       formData.append("file", input.file);
     }
+
     try {
       dispatch(setLoading(true));
       const res = await axios.post(`${USER_API_END_POINT}/register`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+        headers: { "Content-Type": "multipart/form-data" },
         withCredentials: true,
       });
 
@@ -76,10 +72,7 @@ const Signup = () => {
         toast.success(res.data.message);
       }
     } catch (error) {
-      console.log(
-        "Error during signup:",
-        error.response?.data || error.message
-      );
+      console.log("Signup error:", error.response?.data || error.message);
       toast.error(error.response?.data?.message || "Something went wrong!");
     } finally {
       dispatch(setLoading(false));
@@ -87,109 +80,125 @@ const Signup = () => {
   };
 
   return (
-    <div>
+    <div className="min-h-screen bg-white">
       <Navbar />
-      <div className="flex items-center justify-center max-w-7xl mx-auto">
+      <div className="flex justify-center px-4 sm:px-6 lg:px-8 mt-10">
         <form
           onSubmit={submitHandler}
-          className="w-1/2 border border-gray-200 rounded-md p-4 my-10"
+          className="w-full max-w-md bg-white border border-gray-200 rounded-xl shadow-md p-6"
         >
-          <h1 className="font-bold text-2xl mb-5 text-center mb-5">Sign up</h1>
-          <div className="my-4">
-            <Label className="my-2">Full name</Label>
+          <h1 className="font-bold text-2xl mb-6 text-center">Sign Up</h1>
+
+          {/* Full Name */}
+          <div className="mb-4">
+            <Label className="block mb-1">Full Name</Label>
             <Input
               type="text"
-              value={input.fullname}
               name="fullname"
+              value={input.fullname}
               onChange={changeEventHandler}
               placeholder="Reddy"
+              required
             />
           </div>
-          <div className="my-4">
-            <Label className="my-2">Email</Label>
+
+          {/* Email */}
+          <div className="mb-4">
+            <Label className="block mb-1">Email</Label>
             <Input
               type="email"
-              value={input.email}
               name="email"
+              value={input.email}
               onChange={changeEventHandler}
               placeholder="reddy123@gmail.com"
+              required
             />
           </div>
-          <div className="my-4">
-            <Label className="my-2">Mobile number</Label>
+
+          {/* Mobile */}
+          <div className="mb-4">
+            <Label className="block mb-1">Mobile Number</Label>
             <Input
               type="text"
-              value={input.phoneNumber}
               name="phoneNumber"
+              value={input.phoneNumber}
               onChange={changeEventHandler}
-              placeholder="Ex: 9876543210"
+              placeholder="9876543210"
+              required
             />
           </div>
-          <div className="my-4">
-            <Label className="my-2">Password</Label>
+
+          {/* Password */}
+          <div className="mb-4">
+            <Label className="block mb-1">Password</Label>
             <Input
               type="password"
-              value={input.password}
               name="password"
+              value={input.password}
               onChange={changeEventHandler}
               placeholder="********"
+              required
             />
           </div>
-          <div className="flex items-center justify-between">
-            <RadioGroup className="flex items-center gap-4 my-3">
-              <div className="flex items-center space-x-2">
+
+          {/* Role & File Upload */}
+          <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
+            <div className="flex items-center gap-4">
+              <label className="flex items-center gap-2">
                 <Input
                   type="radio"
                   name="role"
                   value="student"
                   checked={input.role === "student"}
                   onChange={changeEventHandler}
-                  className="cursor-pointer"
                 />
-                <Label htmlFor="r1">Student</Label>
-              </div>
-              <div className="flex items-center space-x-2">
+                <span>Student</span>
+              </label>
+              <label className="flex items-center gap-2">
                 <Input
                   type="radio"
                   name="role"
                   value="recruiter"
                   checked={input.role === "recruiter"}
                   onChange={changeEventHandler}
-                  className="cursor-pointer"
                 />
-                <Label htmlFor="r2">Recruiter</Label>
-              </div>
-            </RadioGroup>
+                <span>Recruiter</span>
+              </label>
+            </div>
+
             <div className="flex items-center gap-2">
               <Label>Profile</Label>
               <Input
-                accept="image/*"
                 type="file"
-                className="cursor-pointer"
+                accept="image/*"
                 onChange={changeFileHandler}
                 name="file"
+                className="cursor-pointer"
               />
             </div>
           </div>
+
+          {/* Submit */}
           {loading ? (
-            <Button>
+            <Button disabled className="w-full bg-black text-white">
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Please Wait
             </Button>
           ) : (
             <Button
               type="submit"
-              className="w-full my-4 bg-black text-white hover:bg-neutral-800"
+              className="w-full bg-black text-white hover:bg-neutral-800"
             >
               Signup
             </Button>
-          )}{" "}
-          <span className="text-sm">
-            Already have an account?
-            <Link to="/login" className="text-blue-600">
+          )}
+
+          <p className="text-sm text-center mt-4">
+            Already have an account?{" "}
+            <Link to="/login" className="text-blue-600 underline">
               Login
-            </Link>{" "}
-          </span>
+            </Link>
+          </p>
         </form>
       </div>
     </div>

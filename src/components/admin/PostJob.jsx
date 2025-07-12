@@ -3,7 +3,6 @@ import Navbar from "../shared/Navbar";
 import { Label } from "@radix-ui/react-label";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { useSelector } from "react-redux";
 import {
   Select,
   SelectContent,
@@ -17,9 +16,13 @@ import { JOB_API_END_POINT } from "@/utils/constant";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { useSelector } from "react-redux";
 
 const PostJob = () => {
-  const { id } = useParams(); // Get job id from URL for editing
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { companies } = useSelector((store) => store.company);
+
   const [input, setInput] = useState({
     title: "",
     description: "",
@@ -33,10 +36,8 @@ const PostJob = () => {
   });
 
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
-  const { companies } = useSelector((store) => store.company);
 
-  // Fetch job details if editing
+  // Edit job if ID is provided
   useEffect(() => {
     if (id) {
       const fetchJob = async () => {
@@ -60,7 +61,7 @@ const PostJob = () => {
             });
           }
         } catch (error) {
-          toast.error("Failed to fetch job details");
+          toast.error("Failed to fetch job details.");
         } finally {
           setLoading(false);
         }
@@ -70,36 +71,39 @@ const PostJob = () => {
   }, [id]);
 
   const changeEventHandler = (e) => {
-    setInput({ ...input, [e.target.name]: e.target.value });
+    setInput((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const selectChangeHandler = (value) => {
-    const selectedCompany = companies.find((company) => company._id === value);
-    setInput({ ...input, companyId: selectedCompany?._id || "" });
+    setInput((prev) => ({ ...prev, companyId: value }));
   };
 
   const submitHandler = async (e) => {
     e.preventDefault();
+    if (!input.companyId) {
+      toast.error("Please select a company.");
+      return;
+    }
+
     try {
       setLoading(true);
-      let res;
-      if (id) {
-        res = await axios.put(`${JOB_API_END_POINT}/update/${id}`, input, {
-          headers: { "Content-Type": "application/json" },
-          withCredentials: true,
-        });
-      } else {
-        res = await axios.post(`${JOB_API_END_POINT}/post`, input, {
-          headers: { "Content-Type": "application/json" },
-          withCredentials: true,
-        });
-      }
+      const config = {
+        headers: { "Content-Type": "application/json" },
+        withCredentials: true,
+      };
+      const endpoint = id
+        ? `${JOB_API_END_POINT}/update/${id}`
+        : `${JOB_API_END_POINT}/post`;
+      const method = id ? axios.put : axios.post;
+
+      const res = await method(endpoint, input, config);
+
       if (res.data.success) {
         toast.success(res.data.message);
         navigate("/admin/jobs");
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || "Something went wrong");
+      toast.error(error?.response?.data?.message || "Something went wrong!");
     } finally {
       setLoading(false);
     }
@@ -108,126 +112,138 @@ const PostJob = () => {
   return (
     <div>
       <Navbar />
-      <div className="flex items-center justify-center w-screen my-5">
+      <div className="flex items-center justify-center my-6 px-4">
         <form
           onSubmit={submitHandler}
-          className="grid grid-cols-2 gap-4 w-[80%] max-w-3xl p-5 bg-white rounded shadow"
+          className="grid sm:grid-cols-2 gap-4 w-full max-w-4xl p-6 bg-white rounded-md shadow"
         >
-          {/* Title */}
+          {/* Job Fields */}
           <div>
-            <Label>Title</Label>
+            <Label htmlFor="title">Title</Label>
             <Input
-              type="text"
+              id="title"
               name="title"
+              type="text"
               value={input.title}
               onChange={changeEventHandler}
+              placeholder="Frontend Developer"
             />
           </div>
 
-          {/* Description */}
           <div>
-            <Label>Description</Label>
+            <Label htmlFor="description">Description</Label>
             <Input
-              type="text"
+              id="description"
               name="description"
+              type="text"
               value={input.description}
               onChange={changeEventHandler}
+              placeholder="Write about job role"
             />
           </div>
 
-          {/* Requirements */}
           <div>
-            <Label>Requirements</Label>
+            <Label htmlFor="requirements">Requirements</Label>
             <Input
-              type="text"
+              id="requirements"
               name="requirements"
+              type="text"
               value={input.requirements}
               onChange={changeEventHandler}
+              placeholder="React, MongoDB, etc"
             />
           </div>
 
-          {/* Salary */}
           <div>
-            <Label>Salary (LPA)</Label>
+            <Label htmlFor="salary">Salary (LPA)</Label>
             <Input
-              type="text"
+              id="salary"
               name="salary"
+              type="text"
               value={input.salary}
               onChange={changeEventHandler}
+              placeholder="Ex: 6 - 10"
             />
           </div>
 
-          {/* Location */}
           <div>
-            <Label>Location</Label>
+            <Label htmlFor="location">Location</Label>
             <Input
-              type="text"
+              id="location"
               name="location"
+              type="text"
               value={input.location}
               onChange={changeEventHandler}
+              placeholder="Hyderabad, Remote"
             />
           </div>
 
-          {/* Job Type */}
           <div>
-            <Label>Job Type</Label>
+            <Label htmlFor="jobType">Job Type</Label>
             <Input
-              type="text"
+              id="jobType"
               name="jobType"
+              type="text"
               value={input.jobType}
               onChange={changeEventHandler}
+              placeholder="Full-time, Internship"
             />
           </div>
 
-          {/* Experience */}
           <div>
-            <Label>Experience Level</Label>
+            <Label htmlFor="experience">Experience</Label>
             <Input
-              type="text"
+              id="experience"
               name="experience"
+              type="text"
               value={input.experience}
               onChange={changeEventHandler}
+              placeholder="0-2 years"
             />
           </div>
 
-          {/* Position */}
           <div>
-            <Label>No of Positions</Label>
+            <Label htmlFor="position">No. of Positions</Label>
             <Input
-              type="number"
+              id="position"
               name="position"
+              type="number"
               value={input.position}
               onChange={changeEventHandler}
+              placeholder="5"
             />
           </div>
 
           {/* Company Dropdown */}
-          {companies.length > 0 ? (
-            <Select
-              onValueChange={selectChangeHandler}
-              value={input.companyId}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select a company" />
-              </SelectTrigger>
-              <SelectContent className="bg-white text-black border border-gray-200 rounded-md shadow-md">
-                <SelectGroup>
-                  {companies.map((company) => (
-                    <SelectItem key={company._id} value={company._id}>
-                      {company.name}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-          ) : (
-            <p className="text-xs text-red-600 font-bold text-center my-3">
-              **Please register a company first, before posting a job.**
-            </p>
-          )}
+          <div className="sm:col-span-2 mt-1">
+            <Label>Select Company</Label>
+            {companies.length > 0 ? (
+              <Select
+                onValueChange={selectChangeHandler}
+                value={input.companyId}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Choose a company" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    {companies.map((company) => (
+                      <SelectItem key={company._id} value={company._id}>
+                        {company.name}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            ) : (
+              <p className="text-sm text-red-600 font-semibold mt-1">
+                * Please register a company first.
+              </p>
+            )}
+          </div>
 
-          {/* Action Buttons */}
-          <div className="col-span-2 flex flex-col sm:flex-row gap-3 mt-4">
+          {/* Buttons */}
+          <div className="sm:col-span-2 flex flex-col sm:flex-row gap-3 mt-4">
             {loading ? (
               <Button className="w-full sm:w-auto">
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -244,8 +260,8 @@ const PostJob = () => {
                 <Button
                   type="button"
                   variant="outline"
+                  className="w-full sm:w-auto border text-gray-600"
                   onClick={() => navigate("/admin/jobs")}
-                  className="w-full sm:w-auto border border-gray-300 text-gray-700 hover:bg-gray-100"
                 >
                   Cancel
                 </Button>

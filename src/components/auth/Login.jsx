@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import Navbar from "../shared/Navbar";
 import { Input } from "../ui/input";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -10,8 +9,8 @@ import { USER_API_END_POINT } from "@/utils/constant";
 import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
 import { setLoading, setUser } from "@/redux/authSlice";
-import store from "@/redux/store";
 import { Loader2 } from "lucide-react";
+
 const Login = () => {
   const [input, setInput] = useState({
     email: "",
@@ -19,82 +18,88 @@ const Login = () => {
     role: "",
   });
 
-
-
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { loading,user } = useSelector((store) => store.auth);
+  const { loading, user } = useSelector((store) => store.auth);
 
   const changeEventHandler = (e) => {
     setInput({ ...input, [e.target.name]: e.target.value });
   };
 
-    useEffect(()=>{
-    if(user){
+  useEffect(() => {
+    if (user) {
       navigate("/");
     }
-  },[user]);
+  }, [user]);
 
   const submitHandler = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
+    try {
+      dispatch(setLoading(true));
+      const res = await axios.post(`${USER_API_END_POINT}/login`, input, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      });
 
-  try {
-    dispatch(setLoading(true));
-    const res = await axios.post(`${USER_API_END_POINT}/login`, input, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-      withCredentials: true, // ✅ Ensure cookies are sent
-    });
-
-    if (res.data.success) {
-      localStorage.setItem('token', res.data.token); // ✅ Store token securely
-      dispatch(setUser(res.data.user));
-      navigate("/");
-      toast.success(res.data.message);
-    } else {
-      toast.error(res.data.message);
+      if (res.data.success) {
+        localStorage.setItem("token", res.data.token);
+        dispatch(setUser(res.data.user));
+        navigate("/");
+        toast.success(res.data.message);
+      } else {
+        toast.error(res.data.message);
+      }
+    } catch (error) {
+      console.log("Error during login:", error);
+      toast.error(error?.response?.data?.message || "Something went wrong");
+    } finally {
+      dispatch(setLoading(false));
     }
-  } catch (error) {
-    console.log("Error during login:", error);
-    toast.error(error?.response?.data?.message || "Something went wrong");
-  } finally {
-    dispatch(setLoading(false));
-  }
-};
+  };
 
   return (
-    <div>
+    <div className="min-h-screen bg-white">
       <Navbar />
-      <div className="flex items-center justify-center max-w-7xl mx-auto">
+      <div className="flex justify-center items-center px-4 sm:px-6 lg:px-8 mt-10">
         <form
           onSubmit={submitHandler}
-          className="w-1/2 border border-gray-200 rounded-md p-4 my-10"
+          className="w-full max-w-md bg-white border border-gray-200 rounded-xl shadow-md p-6"
         >
-          <h1 className="font-bold text-2xl mb-5 text-center">Login</h1>
-          <div className="my-4">
-            <Label className="my-2">Email</Label>
+          <h1 className="font-bold text-2xl mb-6 text-center">Login</h1>
+
+          {/* Email */}
+          <div className="mb-4">
+            <Label className="block mb-1">Email</Label>
             <Input
               type="email"
-              value={input.email}
               name="email"
+              value={input.email}
               onChange={changeEventHandler}
               placeholder="reddy123@gmail.com"
+              required
             />
           </div>
-          <div className="my-4">
-            <Label className="my-2">Password</Label>
+
+          {/* Password */}
+          <div className="mb-4">
+            <Label className="block mb-1">Password</Label>
             <Input
               type="password"
-              value={input.password}
               name="password"
+              value={input.password}
               onChange={changeEventHandler}
               placeholder="********"
+              required
             />
           </div>
-          <div className="flex items-center justify-between">
-            <RadioGroup className="flex items-center gap-4 my-3">
-              <div className="flex items-center space-x-2">
+
+          {/* Role */}
+          <div className="mb-4">
+            <Label className="block mb-2">Login as</Label>
+            <div className="flex gap-6">
+              <label className="flex items-center gap-2">
                 <Input
                   type="radio"
                   name="role"
@@ -103,9 +108,9 @@ const Login = () => {
                   onChange={changeEventHandler}
                   className="cursor-pointer"
                 />
-                <Label htmlFor="r1">Student</Label>
-              </div>
-              <div className="flex items-center space-x-2">
+                <span>Student</span>
+              </label>
+              <label className="flex items-center gap-2">
                 <Input
                   type="radio"
                   name="role"
@@ -114,29 +119,33 @@ const Login = () => {
                   onChange={changeEventHandler}
                   className="cursor-pointer"
                 />
-                <Label htmlFor="r2">Recruiter</Label>
-              </div>
-            </RadioGroup>
+                <span>Recruiter</span>
+              </label>
+            </div>
           </div>
+
+          {/* Submit Button */}
           {loading ? (
-            <Button>
+            <Button disabled className="w-full bg-black text-white">
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Please Wait
             </Button>
           ) : (
             <Button
               type="submit"
-              className="w-full my-4 bg-black text-white hover:bg-neutral-800"
+              className="w-full bg-black text-white hover:bg-neutral-800"
             >
               Login
             </Button>
           )}
-          <span className="text-sm">
-            Doesn't have an account?
-            <Link to="/signup" className="text-blue-600">
+
+          {/* Signup Link */}
+          <p className="text-sm text-center mt-4">
+            Don&apos;t have an account?{" "}
+            <Link to="/signup" className="text-blue-600 underline">
               Signup
-            </Link>{" "}
-          </span>
+            </Link>
+          </p>
         </form>
       </div>
     </div>
